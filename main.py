@@ -1,7 +1,7 @@
 import sys
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QColor, QPen
+from PyQt5.QtGui import QColor, QPen
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 
 from PIL import ImageGrab
@@ -10,6 +10,7 @@ x1 = 0
 y1 = 0
 x2 = 0
 y2 = 0
+captureFlag = False
 dragFlag = False
 
 class MyApp(QWidget):
@@ -26,7 +27,6 @@ class MyApp(QWidget):
         btn.resize(btn.sizeHint())
         btn.clicked.connect(self.capture)
 
-
         self.setWindowTitle('Capture and Translation')
         self.resize(400, 200)
         self.move(0,0)
@@ -36,49 +36,58 @@ class MyApp(QWidget):
 
     def paintEvent(self, a0):
         painter = QtGui.QPainter(self)
-        painter.setPen(QPen(QColor(60, 60, 60), 3))
-        painter.drawRect(QtCore.QRect(self.begin, self.end))
+        if captureFlag and dragFlag:
+            painter.setPen(QPen(QColor(60, 60, 60), 3))
+            painter.drawRect(QtCore.QRect(self.begin, self.end))
+        else:
+            painter.drawRect(0,0,0,0)
 
     def capture(self):
+        global captureFlag
+        captureFlag = True
         self.setWindowOpacity(0.2)
         self.move(0,0)
         self.resize(1920, 1080)
         self.setMouseTracking(True)
 
     def mousePressEvent(self, e):  # e ; QMouseEvent
-        global x1
-        global y1
-        global dragFlag
-        x1 = e.globalX()
-        y1 = e.globalY()
-        print(e.globalX(), e.globalY())
-        dragFlag = True
-        self.begin = e.pos()
-        self.end = e.pos()
-        self.update()
+        if captureFlag:
+            global x1
+            global y1
+            global dragFlag
+            x1 = e.globalX()
+            y1 = e.globalY()
+            print(e.globalX(), e.globalY())
+            dragFlag = True
+            self.begin = e.pos()
+            self.end = e.pos()
+            self.update()
 
 
     def mouseMoveEvent(self, e):
-        if dragFlag:
+        if captureFlag and dragFlag:
             self.end = e.pos()
             self.update()
 
     def mouseReleaseEvent(self, e): # e ; QMouseEvent
-        global x2
-        global y2
-        global dragFlag
-        x2 = e.globalX()
-        y2 = e.globalY()
-        print(e.globalX(), e.globalY())
+        global captureFlag
+        if captureFlag:
+            global x2
+            global y2
+            global dragFlag
+            x2 = e.globalX()
+            y2 = e.globalY()
+            print(e.globalX(), e.globalY())
 
-        dragFlag = False
-        self.end = e.pos()
-        self.update()
+            dragFlag = False
+            self.end = e.pos()
+            self.update()
 
-        imageGrab(x1, y1, x2, y2)
-        self.setWindowOpacity(1)
-        self.resize(400, 200)
-        self.setMouseTracking(False)
+            imageGrab(x1, y1, x2, y2)
+            self.setWindowOpacity(1)
+            self.resize(400, 200)
+            self.setMouseTracking(False)
+            captureFlag = False
 
 
 def imageGrab(x1, y1, x2, y2):
