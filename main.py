@@ -1,5 +1,4 @@
 import sys
-
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QColor, QPen
@@ -28,7 +27,7 @@ class MyApp(QWidget):
         btn.clicked.connect(self.capture)
 
 
-        self.setWindowTitle('Yenny Application')
+        self.setWindowTitle('Capture and Translation')
         self.resize(400, 200)
         self.move(0,0)
         self.begin = QtCore.QPoint()
@@ -77,13 +76,18 @@ class MyApp(QWidget):
         self.update()
 
         imageGrab(x1, y1, x2, y2)
-        self.setWindowOpacity(100)
+        self.setWindowOpacity(1)
         self.resize(400, 200)
         self.setMouseTracking(False)
 
 
 def imageGrab(x1, y1, x2, y2):
-    img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+    a1 = x1 * 3360 / 1680
+    b1 = y1 * 2100 / 1050
+    a2 = x2 * 3360 / 1680
+    b2 = y2 * 2100 / 1050
+    print(a1, b1, a2, b2)
+    img = ImageGrab.grab(bbox=(a1, b1, a2, b2))
     img.show()
 
 if __name__ == '__main__':
