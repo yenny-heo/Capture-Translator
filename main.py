@@ -2,7 +2,8 @@ import sys
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QPen
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QMainWindow, QDesktopWidget, \
+    QTextEdit
 
 from PIL import ImageGrab
 
@@ -19,6 +20,7 @@ x2 = 0
 y2 = 0
 captureFlag = False
 dragFlag = False
+convertedText = ""
 
 client = vision.ImageAnnotatorClient.from_service_account_json("./myKey.json")
 
@@ -87,7 +89,6 @@ class MyApp(QWidget):
             global dragFlag
             x1 = e.globalX()
             y1 = e.globalY()
-            print(e.globalX(), e.globalY())
             dragFlag = True
             self.begin = e.pos()
             self.end = e.pos()
@@ -105,15 +106,17 @@ class MyApp(QWidget):
             global x2
             global y2
             global dragFlag
+            global convertedText
             x2 = e.globalX()
             y2 = e.globalY()
-            print(e.globalX(), e.globalY())
 
             dragFlag = False
             self.end = e.pos()
             self.update()
 
-            imageGrab(x1, y1, x2, y2)
+            convertedText = imageGrab(x1, y1, x2, y2)
+            self.dialog = ResultWindow(self)
+            self.dialog.show()
 
             self.lb1.setStyleSheet("color: rgb(0, 0, 0);")
             self.btn.setStyleSheet("color: rgb(0, 0, 0);")
@@ -124,16 +127,41 @@ class MyApp(QWidget):
             self.setMouseTracking(False)
             captureFlag = False
 
+class ResultWindow(QMainWindow):
+    def __init__(self, parent):
+        super(ResultWindow, self).__init__(parent)
+        self.initUI()
+
+    def initUI(self):
+        self.result = QTextEdit()
+        self.result.setAcceptRichText(False)
+        self.result.setText(convertedText)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.result)
+
+        wid = QWidget(self)
+        self.setCentralWidget(wid)
+        wid.setLayout(vbox)
+        self.setWindowTitle('번역 결과')
+        self.resize(400, 200)
+        self.center()
+        self.show()
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
 def imageGrab(x1, y1, x2, y2):
     a1 = x1 * 3360 / 1680
     b1 = y1 * 2100 / 1050
     a2 = x2 * 3360 / 1680
     b2 = y2 * 2100 / 1050
-    print(a1, b1, a2, b2)
     img = ImageGrab.grab(bbox=(a1, b1, a2, b2))
     img.save("./test.png")
-    callGoogleVisionAPI()
+    return callGoogleVisionAPI()
 
 def callGoogleVisionAPI():
     file_name = os.path.abspath("./test.png")
@@ -144,13 +172,15 @@ def callGoogleVisionAPI():
     response = client.text_detection(image=image)
     texts = response.text_annotations
     sentences = texts[0].description
+    sentences = sentences.replace('\n', ' ')
     print(sentences)
-    callGoogleTrans(sentences)
+    return callGoogleTrans(sentences)
 
 def callGoogleTrans(sentences):
     translator = Translator()
     result = translator.translate(sentences, dest="ko")
     print(result.text)
+    return result.text
 
 if __name__ == '__main__':
    app = QApplication(sys.argv)
