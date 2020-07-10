@@ -9,9 +9,9 @@ from PIL import ImageGrab
 import io
 import os
 
-# Imports the Google Cloud client library
 from google.cloud import vision
 from google.cloud.vision import types
+from googletrans import Translator
 
 x1 = 0
 y1 = 0
@@ -120,7 +120,7 @@ class MyApp(QWidget):
             self.lb2.setStyleSheet("color: rgb(0, 0, 0);")
 
             self.setWindowOpacity(1)
-            self.resize(400, 200)
+            self.resize(300, 150)
             self.setMouseTracking(False)
             captureFlag = False
 
@@ -133,8 +133,9 @@ def imageGrab(x1, y1, x2, y2):
     print(a1, b1, a2, b2)
     img = ImageGrab.grab(bbox=(a1, b1, a2, b2))
     img.save("./test.png")
-    img.show()
+    callGoogleVisionAPI()
 
+def callGoogleVisionAPI():
     file_name = os.path.abspath("./test.png")
     with io.open(file_name, 'rb') as image_file:
         content = image_file.read()
@@ -142,7 +143,14 @@ def imageGrab(x1, y1, x2, y2):
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
-    print(texts[0].description)
+    sentences = texts[0].description
+    print(sentences)
+    callGoogleTrans(sentences)
+
+def callGoogleTrans(sentences):
+    translator = Translator()
+    result = translator.translate(sentences, dest="ko")
+    print(result.text)
 
 if __name__ == '__main__':
    app = QApplication(sys.argv)
