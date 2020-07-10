@@ -2,9 +2,16 @@ import sys
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QPen
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout
 
 from PIL import ImageGrab
+
+import io
+import os
+
+# Imports the Google Cloud client library
+from google.cloud import vision
+from google.cloud.vision import types
 
 x1 = 0
 y1 = 0
@@ -12,6 +19,8 @@ x2 = 0
 y2 = 0
 captureFlag = False
 dragFlag = False
+
+client = vision.ImageAnnotatorClient.from_service_account_json("./myKey.json")
 
 class MyApp(QWidget):
 
@@ -22,33 +31,54 @@ class MyApp(QWidget):
 
     def initUI(self):
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        btn = QPushButton('capture', self)
-        btn.move(50,50)
-        btn.resize(btn.sizeHint())
-        btn.clicked.connect(self.capture)
+
+        self.lb1 = QLabel('English -> Korean Translation', self)
+        self.lb1.setAlignment(Qt.AlignCenter)
+
+        self.btn = QPushButton('캡처하고 번역하기', self)
+        self.btn.setFixedHeight(50)
+        self.btn.resize(self.btn.sizeHint())
+        self.btn.clicked.connect(self.capture)
+
+        self.lb2 = QLabel('@made by yenny', self)
+        self.lb2.setAlignment(Qt.AlignCenter)
+
+        vbox = QVBoxLayout()
+        vbox.addStretch(1)
+        vbox.addWidget(self.lb1)
+        vbox.addWidget(self.btn)
+        vbox.addWidget(self.lb2)
+        vbox.addStretch(1)
+
+        self.setLayout(vbox)
 
         self.setWindowTitle('Capture and Translation')
-        self.resize(400, 200)
+        self.resize(300, 150)
         self.move(0,0)
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.show()
 
-    def paintEvent(self, a0):
-        painter = QtGui.QPainter(self)
-        if captureFlag and dragFlag:
-            painter.setPen(QPen(QColor(60, 60, 60), 3))
-            painter.drawRect(QtCore.QRect(self.begin, self.end))
-        else:
-            painter.drawRect(0,0,0,0)
-
     def capture(self):
         global captureFlag
         captureFlag = True
-        self.setWindowOpacity(0.2)
-        self.move(0,0)
+
+        self.lb1.setStyleSheet("color: rgba(255, 255, 255, 0);")
+        self.btn.setStyleSheet("color: rgba(255, 255, 255, 0); background-color: rgba(255, 255, 255, 0);")
+        self.lb2.setStyleSheet("color: rgba(255, 255, 255, 0);")
+
+        self.setWindowOpacity(0.25)
+        self.move(0, 0)
         self.resize(1920, 1080)
         self.setMouseTracking(True)
+
+    def paintEvent(self, a0):
+        painter = QtGui.QPainter(self)
+        if captureFlag and dragFlag:
+            painter.setPen(QPen(Qt.red, 5))
+            painter.drawRect(QtCore.QRect(self.begin, self.end))
+        else:
+            painter.drawRect(0,0,0,0)
 
     def mousePressEvent(self, e):  # e ; QMouseEvent
         if captureFlag:
@@ -84,6 +114,11 @@ class MyApp(QWidget):
             self.update()
 
             imageGrab(x1, y1, x2, y2)
+
+            self.lb1.setStyleSheet("color: rgb(0, 0, 0);")
+            self.btn.setStyleSheet("color: rgb(0, 0, 0);")
+            self.lb2.setStyleSheet("color: rgb(0, 0, 0);")
+
             self.setWindowOpacity(1)
             self.resize(400, 200)
             self.setMouseTracking(False)
@@ -97,7 +132,17 @@ def imageGrab(x1, y1, x2, y2):
     b2 = y2 * 2100 / 1050
     print(a1, b1, a2, b2)
     img = ImageGrab.grab(bbox=(a1, b1, a2, b2))
+    img.save("./test.png")
     img.show()
+
+    file_name = os.path.abspath("./test.png")
+    with io.open(file_name, 'rb') as image_file:
+        content = image_file.read()
+    image = types.Image(content=content)
+
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    print(texts[0].description)
 
 if __name__ == '__main__':
    app = QApplication(sys.argv)
