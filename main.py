@@ -3,7 +3,7 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QPen
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QMainWindow, QDesktopWidget, \
-    QTextEdit
+    QTextEdit, QComboBox, QHBoxLayout
 
 from PIL import ImageGrab
 
@@ -32,10 +32,12 @@ class MyApp(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
-
-        self.lb1 = QLabel('English -> Korean Translation', self)
+        self.lb1 = QLabel('Target Language: ', self)
         self.lb1.setAlignment(Qt.AlignCenter)
+
+        self.cb = QComboBox(self)
+        self.cb.addItem('en')
+        self.cb.addItem('ko')
 
         self.btn = QPushButton('캡처하고 번역하기', self)
         self.btn.setFixedHeight(50)
@@ -45,16 +47,22 @@ class MyApp(QWidget):
         self.lb2 = QLabel('@made by yenny', self)
         self.lb2.setAlignment(Qt.AlignCenter)
 
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(self.lb1)
+        hbox.addWidget(self.cb)
+        hbox.addStretch(1)
+
         vbox = QVBoxLayout()
         vbox.addStretch(1)
-        vbox.addWidget(self.lb1)
+        vbox.addLayout(hbox)
         vbox.addWidget(self.btn)
         vbox.addWidget(self.lb2)
         vbox.addStretch(1)
 
         self.setLayout(vbox)
 
-        self.setWindowTitle('Capture and Translation')
+        self.setWindowTitle('Capture Translator')
         self.resize(300, 150)
         self.move(0,0)
         self.begin = QtCore.QPoint()
@@ -83,6 +91,7 @@ class MyApp(QWidget):
             painter.drawRect(0,0,0,0)
 
     def mousePressEvent(self, e):  # e ; QMouseEvent
+        print("press!")
         if captureFlag:
             global x1
             global y1
