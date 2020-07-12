@@ -24,6 +24,9 @@ convertedText = ""
 
 client = vision.ImageAnnotatorClient.from_service_account_json("./myKey.json")
 
+lan = {'af': 'afrikaans', 'am': 'amharic', 'ar': 'arabic', 'az': 'azerbaijani', 'be': 'belarusian', 'bg': 'bulgarian', 'bn': 'bengali', 'bs': 'bosnian', 'ca': 'catalan', 'ceb': 'cebuano', 'co': 'corsican', 'cs': 'czech', 'cy': 'welsh', 'da': 'danish', 'de': 'german', 'el': 'greek', 'en': 'english', 'eo': 'esperanto', 'es': 'spanish', 'et': 'estonian', 'eu': 'basque', 'fa': 'persian', 'fi': 'finnish', 'fil': 'Filipino', 'fr': 'french', 'fy': 'frisian', 'ga': 'irish', 'gd': 'scots gaelic', 'gl': 'galician', 'gu': 'gujarati', 'ha': 'hausa', 'haw': 'hawaiian', 'he': 'Hebrew', 'hi': 'hindi', 'hmn': 'hmong', 'hr': 'croatian', 'ht': 'haitian creole', 'hu': 'hungarian', 'hy': 'armenian', 'id': 'indonesian', 'ig': 'igbo', 'is': 'icelandic', 'it': 'italian', 'iw': 'hebrew', 'ja': 'japanese', 'jw': 'javanese', 'ka': 'georgian', 'kk': 'kazakh', 'km': 'khmer', 'kn': 'kannada', 'ko': 'korean', 'ku': 'kurdish (kurmanji)', 'ky': 'kyrgyz', 'la': 'latin', 'lb': 'luxembourgish', 'lo': 'lao', 'lt': 'lithuanian', 'lv': 'latvian', 'mg': 'malagasy', 'mi': 'maori', 'mk': 'macedonian', 'ml': 'malayalam', 'mn': 'mongolian', 'mr': 'marathi', 'ms': 'malay', 'mt': 'maltese', 'my': 'myanmar (burmese)', 'ne': 'nepali', 'nl': 'dutch', 'no': 'norwegian', 'ny': 'chichewa', 'pa': 'punjabi', 'pl': 'polish', 'ps': 'pashto', 'pt': 'portuguese', 'ro': 'romanian', 'ru': 'russian', 'sd': 'sindhi', 'si': 'sinhala', 'sk': 'slovak', 'sl': 'slovenian', 'sm': 'samoan', 'sn': 'shona', 'so': 'somali', 'sq': 'albanian', 'sr': 'serbian', 'st': 'sesotho', 'su': 'sundanese', 'sv': 'swedish', 'sw': 'swahili', 'ta': 'tamil', 'te': 'telugu', 'tg': 'tajik', 'th': 'thai', 'tl': 'filipino', 'tr': 'turkish', 'uk': 'ukrainian', 'ur': 'urdu', 'uz': 'uzbek', 'vi': 'vietnamese', 'xh': 'xhosa', 'yi': 'yiddish', 'yo': 'yoruba', 'zh-cn': 'chinese (simplified)', 'zh-tw': 'chinese (traditional)', 'zu': 'zulu'}
+targetLan = 'ko'
+
 class MyApp(QWidget):
 
     # 생성자
@@ -36,8 +39,11 @@ class MyApp(QWidget):
         self.lb1.setAlignment(Qt.AlignCenter)
 
         self.cb = QComboBox(self)
-        self.cb.addItem('en')
-        self.cb.addItem('ko')
+        for k, v in lan.items():
+            self.cb.addItem(v)
+        self.cb.setCurrentIndex((list(lan).index(targetLan)))
+
+        self.cb.activated[str].connect(self.onActivated)
 
         self.btn = QPushButton('캡처하고 번역하기', self)
         self.btn.setFixedHeight(50)
@@ -69,11 +75,19 @@ class MyApp(QWidget):
         self.end = QtCore.QPoint()
         self.show()
 
+    def onActivated(self, text):
+        global targetLan
+        values = list(lan.values())
+        idx = values.index(text)
+        targetLan = list(lan)[idx]
+
+
     def capture(self):
         global captureFlag
         captureFlag = True
 
         self.lb1.setStyleSheet("color: rgba(255, 255, 255, 0);")
+        self.cb.setStyleSheet("color: rgba(255, 255, 255, 0); background-color: rgba(255, 255, 255, 0);")
         self.btn.setStyleSheet("color: rgba(255, 255, 255, 0); background-color: rgba(255, 255, 255, 0);")
         self.lb2.setStyleSheet("color: rgba(255, 255, 255, 0);")
 
@@ -91,7 +105,6 @@ class MyApp(QWidget):
             painter.drawRect(0,0,0,0)
 
     def mousePressEvent(self, e):  # e ; QMouseEvent
-        print("press!")
         if captureFlag:
             global x1
             global y1
@@ -128,6 +141,7 @@ class MyApp(QWidget):
             self.dialog.show()
 
             self.lb1.setStyleSheet("color: rgb(0, 0, 0);")
+            self.cb.setStyleSheet("color: rgb(0, 0, 0);")
             self.btn.setStyleSheet("color: rgb(0, 0, 0);")
             self.lb2.setStyleSheet("color: rgb(0, 0, 0);")
 
@@ -187,7 +201,7 @@ def callGoogleVisionAPI():
 
 def callGoogleTrans(sentences):
     translator = Translator()
-    result = translator.translate(sentences, dest="ko")
+    result = translator.translate(sentences, dest=targetLan)
     print(result.text)
     return result.text
 
