@@ -25,7 +25,7 @@ translates into a language of your choice through a simple screen capture.
 
 ```python
 LANGUAGES = {
-		'af': 'afrikaans',
+	'af': 'afrikaans',
     'sq': 'albanian',
     'am': 'amharic',
     'ar': 'arabic',
