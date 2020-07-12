@@ -25,7 +25,7 @@ convertedText = ""
 client = vision.ImageAnnotatorClient.from_service_account_json("./myKey.json")
 
 lan = {
-	'af': 'afrikaans',
+    'af': 'afrikaans',
     'sq': 'albanian',
     'am': 'amharic',
     'ar': 'arabic',
@@ -134,6 +134,7 @@ lan = {
 }
 targetLan = 'ko'
 
+
 class MyApp(QWidget):
 
     # 생성자
@@ -152,7 +153,7 @@ class MyApp(QWidget):
 
         self.cb.activated[str].connect(self.onActivated)
 
-        self.btn = QPushButton('캡처하고 번역하기', self)
+        self.btn = QPushButton('Capture and translate', self)
         self.btn.setFixedHeight(50)
         self.btn.resize(self.btn.sizeHint())
         self.btn.clicked.connect(self.capture)
@@ -175,9 +176,10 @@ class MyApp(QWidget):
 
         self.setLayout(vbox)
 
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.setWindowTitle('Capture Translator')
         self.resize(300, 150)
-        self.move(0,0)
+        self.move(0, 0)
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.show()
@@ -187,7 +189,6 @@ class MyApp(QWidget):
         values = list(lan.values())
         idx = values.index(text)
         targetLan = list(lan)[idx]
-
 
     def capture(self):
         global captureFlag
@@ -209,7 +210,7 @@ class MyApp(QWidget):
             painter.setPen(QPen(Qt.red, 5))
             painter.drawRect(QtCore.QRect(self.begin, self.end))
         else:
-            painter.drawRect(0,0,0,0)
+            painter.drawRect(0, 0, 0, 0)
 
     def mousePressEvent(self, e):  # e ; QMouseEvent
         if captureFlag:
@@ -223,18 +224,17 @@ class MyApp(QWidget):
             self.end = e.pos()
             self.update()
 
-
     def mouseMoveEvent(self, e):
         if captureFlag and dragFlag:
             self.end = e.pos()
             self.update()
 
-    def mouseReleaseEvent(self, e): # e ; QMouseEvent
+    def mouseReleaseEvent(self, e):  # e ; QMouseEvent
         global captureFlag
-        if captureFlag:
+        global dragFlag
+        if captureFlag and dragFlag:
             global x2
             global y2
-            global dragFlag
             global convertedText
             x2 = e.globalX()
             y2 = e.globalY()
@@ -257,6 +257,7 @@ class MyApp(QWidget):
             self.setMouseTracking(False)
             captureFlag = False
 
+
 class ResultWindow(QMainWindow):
     def __init__(self, parent):
         super(ResultWindow, self).__init__(parent)
@@ -273,7 +274,7 @@ class ResultWindow(QMainWindow):
         wid = QWidget(self)
         self.setCentralWidget(wid)
         wid.setLayout(vbox)
-        self.setWindowTitle('번역 결과')
+        self.setWindowTitle('Translation result')
         self.resize(400, 200)
         self.center()
         self.show()
@@ -284,6 +285,7 @@ class ResultWindow(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+
 def imageGrab(x1, y1, x2, y2):
     a1 = x1 * 3360 / 1680
     b1 = y1 * 2100 / 1050
@@ -293,6 +295,7 @@ def imageGrab(x1, y1, x2, y2):
     img.save("./test.png")
     return callGoogleVisionAPI()
 
+
 def callGoogleVisionAPI():
     file_name = os.path.abspath("./test.png")
     with io.open(file_name, 'rb') as image_file:
@@ -301,10 +304,13 @@ def callGoogleVisionAPI():
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
-    sentences = texts[0].description
-    sentences = sentences.replace('\n', ' ')
-    print(sentences)
+    if not texts:
+        sentences = ""
+    else:
+        sentences = texts[0].description
+        sentences = sentences.replace('\n', ' ')
     return callGoogleTrans(sentences)
+
 
 def callGoogleTrans(sentences):
     translator = Translator()
@@ -312,7 +318,8 @@ def callGoogleTrans(sentences):
     print(result.text)
     return result.text
 
+
 if __name__ == '__main__':
-   app = QApplication(sys.argv)
-   ex = MyApp()
-   sys.exit(app.exec_())
+    app = QApplication(sys.argv)
+    ex = MyApp()
+    sys.exit(app.exec_())
