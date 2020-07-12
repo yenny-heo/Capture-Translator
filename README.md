@@ -1,6 +1,6 @@
 # Capture Translator
 
-<p align="center"><img width="425" alt="스크린샷 2020-07-12 오후 1 29 14" src="https://user-images.githubusercontent.com/47802374/87238913-b236a500-c443-11ea-96ed-6a3bccc23d4e.png">
+<p align="center"><img width="425" alt="스크린샷 2020-07-12 오후 11 34 04" src="https://user-images.githubusercontent.com/47802374/87249644-2e100c00-c49b-11ea-9885-e4605f0734d4.png">
 </p>
 
 translates into a language of your choice through a simple screen capture.
@@ -19,7 +19,7 @@ translates into a language of your choice through a simple screen capture.
 
 2. Check the result window.
 
-<p align="center"><img width="512" alt="스크린샷 2020-07-11 오전 3 51 20" src="https://user-images.githubusercontent.com/47802374/87188455-d1d9aa80-c329-11ea-8b53-7e3fd36d38af.png"></p>
+<p align="center"><img width="512" alt="스크린샷 2020-07-12 오후 11 48 18" src="https://user-images.githubusercontent.com/47802374/87249648-310afc80-c49b-11ea-8190-a905c3e736ec.png"></p>
 
 ## Supporting languages
 
