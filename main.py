@@ -176,7 +176,6 @@ class MyApp(QWidget):
 
         self.setLayout(vbox)
 
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.setWindowTitle('Capture Translator')
         self.resize(300, 150)
         self.move(0, 0)
@@ -291,6 +290,10 @@ def imageGrab(x1, y1, x2, y2):
     b1 = y1 * 2100 / 1050
     a2 = x2 * 3360 / 1680
     b2 = y2 * 2100 / 1050
+    if a2 < a1:
+        a1, a2 = a2, a1
+    if b2 < b1:
+        b1, b2 = b2, b1
     img = ImageGrab.grab(bbox=(a1, b1, a2, b2))
     img.save("./test.png")
     return callGoogleVisionAPI()
